@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PULSE — Student Fitness</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0a0a0a;
+  --dark:#111111;
+  --card:#181818;
+  --border:#2a2a2a;
+  --lime:#c8f135;
+  --lime-dk:#9bbf1a;
+  --orange:#ff6b2b;
+  --blue:#3b82f6;
+  --red:#ef4444;
+  --white:#f5f5f5;
+  --grey:#888;
+  --grey-lt:#bbb;
+  --r:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Barlow',sans-serif;
+  background:var(--black);
+  color:var(--white);
+  min-height:100vh;
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* ── Noise texture overlay ── */
+body::after{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:.4;pointer-events:none;
+}
+
+/* ── Scanline accent ── */
+.scanlines{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+
+/* ── Shell ── */
+.shell{position:relative;z-index:1;max-width:480px;margin:0 auto;padding-bottom:88px;}
+
+/* ── Header ── */
+.hdr{
+  padding:28px 20px 0;
+  display:flex;align-items:flex-end;justify-content:space-between;
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:52px;letter-spacing:4px;
+  line-height:1;
+  background:linear-gradient(135deg,var(--lime) 0%,#e8ff80 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-tag{
+  font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--grey);margin-bottom:6px;font-weight:500;
+}
+.hdr-right{display:flex;gap:8px;align-items:center;padding-bottom:8px;}
+
+/* ── Pill buttons ── */
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:100px;padding:7px 14px;
+  font-family:'Barlow',sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.5px;text-transform:uppercase;
+  color:var(--grey-lt);cursor:pointer;transition:all .2s;
+}
+.pill:hover{border-color:var(--lime);color:var(--lime);}
+.pill.on{border-color:var(--lime);color:var(--lime);background:rgba(200,241,53,0.08);}
+.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--grey);transition:all .2s;}
+.pill.on .pill-dot{background:var(--lime);animation:blink .7s ease infinite alternate;}
+@keyframes blink{0%{opacity:.4;}100%{opacity:1;transform:scale(1.3);}}
+
+/* ── Date strip ── */
+.date-strip{
+  padding:10px 20px 0;
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);
+  font-weight:500;
+}
+
+/* ── Section ── */
+.section{display:none;padding:0 16px;animation:up .25s ease;}
+.section.active{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Section heading ── */
+.sec-hd{padding:20px 4px 16px;}
+.sec-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:44px;letter-spacing:3px;line-height:1;
+}
+.sec-sub{font-size:12px;color:var(--grey);margin-top:4px;letter-spacing:.5px;font-weight:400;}
+
+/* ── Cards ── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+}
+.card-accent{border-color:rgba(200,241,53,0.2);background:#141414;}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--lime),transparent);opacity:0;
+  transition:opacity .3s;
+}
+.card:hover::before{opacity:1;}
+
+/* ── Input ── */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-bottom:7px;font-weight:600;}
+.field input,.field select{
+  width:100%;background:#111;border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+  color:var(--white);font-family:'Barlow',sans-serif;font-size:15px;font-weight:400;
+  outline:none;transition:border-color .2s;-webkit-appearance:none;
+}
+.field input:focus,.field select:focus{border-color:var(--lime);}
+.field select option{background:#111;}
+
+/* ── Buttons ── */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:15px 20px;border-radius:12px;border:none;
+  font-family:'Barlow',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;width:100%;
+}
+.btn-lime{background:var(--lime);color:#0a0a0a;}
+.btn-lime:hover{background:#d4f53e;transform:translateY(-1px);}
+.btn-lime:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+.btn-orange{background:var(--orange);color:white;}
+.btn-orange:hover{background:#e8551a;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--white);}
+.btn-ghost:hover{border-color:var(--lime);color:var(--lime);}
+.btn-ghost:disabled{opacity:.25;cursor:not-allowed;}
+.btn-red{background:transparent;border:1px solid rgba(239,68,68,0.3);color:#ef4444;}
+.btn-red:hover{background:rgba(239,68,68,0.1);}
+.btn-sm{padding:9px 16px;font-size:11px;letter-spacing:1px;border-radius:9px;width:auto;}
+.btn-row{display:flex;gap:8px;margin-top:8px;}
+
+/* ── Stats ── */
+.stats{display:flex;gap:10px;margin-bottom:14px;}
+.stat{
+  flex:1;background:#111;border:1px solid var(--border);
+  border-radius:12px;padding:14px 10px;text-align:center;
+}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;line-height:1;}
+.stat-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-top:3px;font-weight:600;}
+
+/* ── Progress ── */
+.prog-wrap{margin-bottom:4px;}
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.prog-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);font-weight:600;}
+.prog-val{font-size:11px;color:var(--lime);font-weight:700;letter-spacing:.5px;}
+.prog-track{height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--lime),#e8ff80);transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+/* ── Divider ── */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+
+/* ══════════ DESK WORKOUT ══════════ */
+.stage{
+  height:280px;
+  background:linear-gradient(160deg,#0e0e0e,#131313);
+  border-radius:14px 14px 0 0;
+  margin:-20px -20px 20px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.stage-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(200,241,53,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,241,53,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.stage-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,transparent 40%,rgba(0,0,0,0.8) 100%);
+}
+.fig-wrap{position:relative;z-index:2;width:160px;height:200px;}
+.fig-wrap svg{width:100%;height:100%;}
+.stage-num{
+  position:absolute;top:16px;right:16px;z-index:3;
+  width:52px;height:52px;
+  background:rgba(0,0,0,0.7);
+  border:1px solid rgba(200,241,53,0.3);
+  border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.stage-num-big{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--lime);line-height:1;}
+.stage-num-lbl{font-size:8px;color:var(--grey);letter-spacing:1px;text-transform:uppercase;}
+.stage-badge{
+  position:absolute;bottom:16px;left:16px;z-index:3;
+  background:rgba(0,0,0,0.7);border:1px solid var(--border);
+  border-radius:8px;padding:5px 12px;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--lime);font-weight:700;
+}
+.stage-exercise{
+  position:absolute;bottom:16px;right:16px;z-index:3;
+  font-size:9px;color:var(--grey);letter-spacing:1px;text-transform:uppercase;font-weight:600;
+}
+
+/* Coach box */
+.coach-box{
+  background:#111;border-left:3px solid var(--lime);
+  border-radius:0 10px 10px 0;
+  padding:10px 14px;margin-bottom:14px;
+  font-size:13px;color:var(--grey-lt);
+  font-style:italic;min-height:40px;letter-spacing:.2px;
+  transition:all .3s;
+}
+
+/* Timer countdown */
+.ex-timer{
+  text-align:center;padding:14px;
+  background:#111;border:1px solid var(--border);
+  border-radius:12px;margin-bottom:14px;display:none;
+}
+.ex-timer.show{display:block;animation:up .2s;}
+.ex-timer-num{
+  font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:2px;
+  color:var(--lime);line-height:1;
+}
+.ex-timer-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--grey);margin-top:2px;font-weight:600;}
+
+/* Exercise name */
+.ex-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:30px;letter-spacing:2px;margin-bottom:6px;
+}
+.ex-desc{font-size:13px;color:var(--grey-lt);line-height:1.65;margin-bottom:12px;}
+.ex-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.tag{
+  display:inline-block;padding:4px 10px;border-radius:6px;
+  font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+}
+.tag-lime{background:rgba(200,241,53,0.12);color:var(--lime);border:1px solid rgba(200,241,53,0.2);}
+.tag-grey{background:rgba(136,136,136,0.1);color:var(--grey-lt);border:1px solid var(--border);}
+
+/* Exercise list */
+.ex-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;
+  background:#111;border:1px solid var(--border);
+  border-radius:12px;margin-bottom:8px;
+  cursor:pointer;transition:all .2s;
+}
+.ex-item:hover{border-color:rgba(200,241,53,0.3);}
+.ex-item.ex-active{border-color:var(--lime);background:rgba(200,241,53,0.05);}
+.ex-item.ex-done{opacity:.4;}
+.ex-num{
+  width:28px;height:28px;border-radius:7px;
+  background:var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.5px;
+  flex-shrink:0;transition:all .2s;
+}
+.ex-item.ex-active .ex-num{background:var(--lime);color:var(--black);}
+.ex-item.ex-done .ex-num{background:rgba(200,241,53,0.2);color:var(--lime);}
+.ex-info{flex:1;}
+.ex-name{font-size:14px;font-weight:600;letter-spacing:.2px;}
+.ex-detail{font-size:11px;color:var(--grey);margin-top:2px;}
+.ex-kcal{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--orange);letter-spacing:1px;}
+
+/* Finish card */
+.finish{
+  text-align:center;padding:32px 20px;
+  background:linear-gradient(135deg,rgba(200,241,53,0.08),rgba(200,241,53,0.02));
+  border:1px solid rgba(200,241,53,0.25);
+  border-radius:var(--r);margin-bottom:14px;display:none;
+}
+.finish.show{display:block;animation:up .4s;}
+.finish-icon{font-size:48px;margin-bottom:12px;}
+.finish-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:3px;color:var(--lime);margin-bottom:4px;}
+.finish-sub{font-size:13px;color:var(--grey);margin-bottom:24px;}
+.finish-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.fin-val{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--white);}
+.fin-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:600;}
+
+/* ══════════ STEPS ══════════ */
+.step-hero{
+  text-align:center;padding:24px 0 16px;
+  background:linear-gradient(135deg,#111 0%,#0e0e0e 100%);
+  border-radius:14px;margin-bottom:14px;
+  border:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.step-hero::before{
+  content:'';position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(200,241,53,0.08),transparent 70%);
+  pointer-events:none;
+}
+.step-count{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:88px;letter-spacing:-2px;line-height:1;
+  background:linear-gradient(135deg,#fff 0%,var(--lime) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.step-goal-txt{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);margin-top:4px;font-weight:600;}
+
+/* Tap ring */
+.tap-wrap{position:relative;width:160px;height:160px;margin:20px auto;cursor:pointer;user-select:none;}
+.tap-wrap svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.tap-inner{
+  position:absolute;inset:14px;border-radius:50%;
+  background:linear-gradient(135deg,#1a1a1a,#111);
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:transform .1s;
+}
+.tap-wrap:active .tap-inner{transform:scale(.91);}
+.tap-emoji{font-size:36px;}
+.tap-text{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:600;margin-top:4px;}
+
+/* Sensor status */
+.sensor-status{
+  font-size:12px;color:var(--grey);text-align:center;
+  padding:10px 0;min-height:36px;
+}
+.sensor-active{color:var(--lime);}
+.wave{display:none;justify-content:center;align-items:center;gap:3px;height:24px;margin:8px 0;}
+.wave.show{display:flex;}
+.wb{width:4px;border-radius:4px;background:var(--lime);animation:wb .7s ease-in-out infinite alternate;}
+.wb:nth-child(1){animation-delay:0s;}
+.wb:nth-child(2){animation-delay:.1s;}
+.wb:nth-child(3){animation-delay:.2s;}
+.wb:nth-child(4){animation-delay:.3s;}
+.wb:nth-child(5){animation-delay:.4s;}
+@keyframes wb{0%{height:4px;opacity:.4;}100%{height:22px;opacity:1;}}
+
+.step-quick{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+
+/* ══════════ CALORIES ══════════ */
+.cal-result{
+  text-align:center;padding:24px;
+  background:#111;border:1px solid rgba(255,107,43,0.25);
+  border-radius:14px;margin-top:14px;display:none;
+}
+.cal-result.show{display:block;animation:up .3s;}
+.cal-num{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:2px;color:var(--orange);line-height:1;}
+.cal-unit{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--grey);font-weight:600;}
+.cal-equiv{font-size:12px;color:var(--grey-lt);margin-top:8px;font-style:italic;}
+
+.log-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.log-row:last-child{border-bottom:none;}
+.log-name{font-size:13px;font-weight:500;}
+.log-meta{font-size:11px;color:var(--grey);margin-top:2px;}
+.log-kcal{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange);letter-spacing:1px;}
+
+/* ══════════ TIMER ══════════ */
+.timer-hero{
+  text-align:center;padding:32px 0 20px;
+  position:relative;
+}
+.timer-display{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:96px;letter-spacing:-2px;line-height:1;
+  background:linear-gradient(135deg,var(--white) 0%,var(--lime) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.timer-phase{
+  font-size:10px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--grey);margin-top:8px;font-weight:600;
+}
+.timer-verbal{
+  background:#111;border-left:3px solid var(--orange);
+  border-radius:0 10px 10px 0;
+  padding:10px 14px;margin-bottom:14px;
+  font-size:13px;color:var(--grey-lt);font-style:italic;
+  min-height:40px;transition:all .3s;
+}
+
+/* Workout exercises */
+.wk-ex{
+  background:#111;border:1px solid var(--border);
+  border-radius:12px;padding:16px;margin-bottom:10px;
+}
+.wk-ex-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.wk-ex-name{font-size:15px;font-weight:600;letter-spacing:.2px;}
+.wk-ex-meta{font-size:11px;color:var(--grey);}
+.sets-wrap{display:flex;gap:8px;flex-wrap:wrap;}
+.set-btn{
+  width:44px;height:44px;border-radius:9px;
+  background:transparent;border:1.5px solid var(--border);
+  color:var(--grey);font-size:11px;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;transition:all .15s;
+  font-family:'Barlow',sans-serif;text-transform:uppercase;
+}
+.set-btn:hover{border-color:var(--lime);color:var(--lime);}
+.set-btn.done{background:var(--lime);border-color:var(--lime);color:var(--black);}
+
+.quick-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+
+/* ── Nav ── */
+.nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;z-index:100;
+  background:rgba(10,10,10,0.97);
+  backdrop-filter:blur(30px);
+  border-top:1px solid var(--border);
+  display:flex;padding:6px 0 20px;
+}
+.nb{
+  flex:1;background:none;border:none;
+  color:var(--grey);
+  font-family:'Barlow',sans-serif;font-size:9px;
+  font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:8px 4px;transition:all .2s;
+}
+.nb-icon{font-size:22px;transition:transform .2s;}
+.nb.active{color:var(--lime);}
+.nb.active .nb-icon{transform:scale(1.12);}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;top:24px;left:50%;
+  transform:translateX(-50%) translateY(-80px);
+  background:var(--lime);color:var(--black);
+  padding:11px 22px;border-radius:100px;
+  font-size:13px;font-weight:700;letter-spacing:.5px;
+  z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<div class="shell">
+  <!-- Header -->
+  <div class="hdr">
+    <div>
+      <div class="logo">PULSE</div>
+    </div>
+    <div class="hdr-right">
+      <button class="pill" id="voiceBtn" onclick="testVoice()">🔊 Voice</button>
+      <button class="pill" id="zenBtn" onclick="toggleZen()">
+        <div class="pill-dot" id="zenDot"></div>
+        <span id="zenLabel">Music</span>
+      </button>
+    </div>
+  </div>
+  <div class="date-strip" id="dateStrip"></div>
+
+  <!-- ══════════════════════════════════════
+       DESK WORKOUT
+  ══════════════════════════════════════ -->
+  <div class="section active" id="sec-desk">
+    <div class="sec-hd">
+      <div class="sec-title">DESK<br>WORKOUT</div>
+      <div class="sec-sub">7 exercises · 5 minutes · no equipment</div>
+    </div>
+
+    <!-- Finish card -->
+    <div class="finish" id="deskFinish">
+      <div class="finish-icon">🏆</div>
+      <div class="finish-title">CRUSHED IT</div>
+      <div class="finish-sub">Full desk workout complete</div>
+      <div class="finish-grid">
+        <div><div class="fin-val">7</div><div class="fin-lbl">Exercises</div></div>
+        <div><div class="fin-val" id="finMins">5</div><div class="fin-lbl">Minutes</div></div>
+        <div><div class="fin-val">28</div><div class="fin-lbl">~kcal</div></div>
+      </div>
+      <button class="btn btn-lime" style="margin-top:20px" onclick="restartDesk()">↺ GO AGAIN</button>
+    </div>
+
+    <!-- Main exercise card -->
+    <div class="card card-accent" id="deskMain">
+      <div class="stage">
+        <div class="stage-grid"></div>
+        <div class="stage-vignette"></div>
+        <div class="fig-wrap">
+          <svg id="figSvg" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <ellipse cx="80" cy="190" rx="40" ry="6" fill="rgba(200,241,53,0.06)"/>
+            <g id="figG" filter="url(#glow)"></g>
+          </svg>
+        </div>
+        <div class="stage-num">
+          <div class="stage-num-big" id="repNum">0</div>
+          <div class="stage-num-lbl" id="repUnit">reps</div>
+        </div>
+        <div class="stage-badge" id="stageBadge">READY</div>
+      </div>
+
+      <!-- Progress -->
+      <div class="prog-wrap">
+        <div class="prog-row">
+          <span class="prog-label">Progress</span>
+          <span class="prog-val" id="deskPct">0 / 7</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="deskProg" style="width:0%"></div></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="coach-box" id="coachBox">Press Begin to start your 5-minute desk workout session.</div>
+
+      <div class="ex-title" id="exTitle">READY TO START?</div>
+      <div class="ex-desc" id="exDesc">7 exercises designed for students. No equipment needed — just a chair and 5 minutes.</div>
+      <div class="ex-tags" id="exTags">
+        <span class="tag tag-lime">7 EXERCISES</span>
+        <span class="tag tag-grey">~5 MIN</span>
+        <span class="tag tag-grey">~28 KCAL</span>
+      </div>
+
+      <!-- Timer -->
+      <div class="ex-timer" id="exTimer">
+        <div class="ex-timer-num" id="timerNum">30</div>
+        <div class="ex-timer-lbl">seconds</div>
+      </div>
+
+      <button class="btn btn-lime" id="startBtn" onclick="deskStart()">▶ BEGIN WORKOUT</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-sm" style="flex:1" id="prevBtn" onclick="deskPrev()" disabled>← PREV</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" id="skipBtn" onclick="deskSkip()" disabled>SKIP →</button>
+      </div>
+      <button class="btn btn-red btn-sm" id="stopBtn" onclick="deskStop()" style="display:none;margin-top:8px;width:100%">⏹ STOP WORKOUT</button>
+    </div>
+
+    <!-- Exercise checklist -->
+    <div id="exList"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       YOGA
+  ══════════════════════════════════════ -->
+  <div class="section" id="sec-steps">
+    <div class="sec-hd">
+      <div class="sec-title">YOGA<br>FLOW</div>
+      <div class="sec-sub">8 poses · 10 minutes · beginner friendly</div>
+    </div>
+
+    <!-- Finish card -->
+    <div class="finish" id="yogaFinish">
+      <div class="finish-icon">🧘</div>
+      <div class="finish-title">NAMASTE</div>
+      <div class="finish-sub">Full yoga flow complete</div>
+      <div class="finish-grid">
+        <div><div class="fin-val">8</div><div class="fin-lbl">Poses</div></div>
+        <div><div class="fin-val" id="yogaFinMins">10</div><div class="fin-lbl">Minutes</div></div>
+        <div><div class="fin-val">35</div><div class="fin-lbl">~kcal</div></div>
+      </div>
+      <button class="btn btn-lime" style="margin-top:20px" onclick="restartYoga()">↺ FLOW AGAIN</button>
+    </div>
+
+    <!-- Main yoga card -->
+    <div class="card card-accent" id="yogaMain">
+      <!-- Pose stage -->
+      <div class="stage">
+        <div class="stage-grid"></div>
+        <div class="stage-vignette"></div>
+        <div class="fig-wrap">
+          <svg id="yogaSvg" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="yogaGlow">
+                <feGaussianBlur stdDeviation="2.5" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <ellipse cx="80" cy="192" rx="44" ry="5" fill="rgba(200,241,53,0.06)"/>
+            <g id="yogaFigG" filter="url(#yogaGlow)"></g>
+          </svg>
+        </div>
+        <div class="stage-num">
+          <div class="stage-num-big" id="yogaHoldNum">0</div>
+          <div class="stage-num-lbl">secs</div>
+        </div>
+        <div class="stage-badge" id="yogaBadge">READY</div>
+      </div>
+
+      <!-- Progress -->
+      <div class="prog-wrap">
+        <div class="prog-row">
+          <span class="prog-label">Flow Progress</span>
+          <span class="prog-val" id="yogaPct">0 / 8</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="yogaProg" style="width:0%"></div></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="coach-box" id="yogaCoach">Press Begin Flow to start your 10-minute yoga session.</div>
+
+      <div class="ex-title" id="yogaTitle">READY TO FLOW?</div>
+      <div class="ex-desc" id="yogaDesc">8 beginner yoga poses to improve flexibility, reduce stress, and energise your mind and body.</div>
+      <div class="ex-tags" id="yogaTags">
+        <span class="tag tag-lime">8 POSES</span>
+        <span class="tag tag-grey">~10 MIN</span>
+        <span class="tag tag-grey">~35 KCAL</span>
+      </div>
+
+      <!-- Hold timer -->
+      <div class="ex-timer" id="yogaTimer">
+        <div class="ex-timer-num" id="yogaTimerNum">30</div>
+        <div class="ex-timer-lbl">seconds hold</div>
+      </div>
+
+      <button class="btn btn-lime" id="yogaStartBtn" onclick="yogaStart()">▶ BEGIN FLOW</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-sm" style="flex:1" id="yogaPrevBtn" onclick="yogaPrev()" disabled>← PREV</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" id="yogaSkipBtn" onclick="yogaSkip()" disabled>SKIP →</button>
+      </div>
+      <button class="btn btn-red btn-sm" id="yogaStopBtn" onclick="yogaStop()" style="display:none;margin-top:8px;width:100%">⏹ END SESSION</button>
+    </div>
+
+    <!-- YouTube video card -->
+    <div class="card" id="yogaVideoCard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:700">FOLLOW ALONG VIDEO</div>
+          <div style="font-size:12px;color:var(--grey-lt);margin-top:3px" id="videoLabel">Tutorial</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleVideo()" id="videoToggleBtn" style="width:auto">▶ SHOW</button>
+      </div>
+      <div id="videoFrame" style="display:none">
+        <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;background:#000">
+          <iframe id="ytFrame"
+            src=""
+            title="Yoga tutorial"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px">
+          </iframe>
+        </div>
+        <div style="font-size:11px;color:var(--grey);margin-top:8px;text-align:center;letter-spacing:.3px">
+          Video plays on YouTube — tap fullscreen for best experience
+        </div>
+      </div>
+    </div>
+
+    <!-- Full flow video card -->
+    <div class="card card-accent">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:10px">FULL YOGA SESSIONS</div>
+      <div style="font-size:12px;color:var(--grey-lt);margin-bottom:14px">Follow a complete guided yoga class on YouTube</div>
+      <div id="fullVideoList"></div>
+    </div>
+
+    <!-- Pose checklist -->
+    <div id="yogaList"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CALORIES
+  ══════════════════════════════════════ -->
+  <div class="section" id="sec-cal">
+    <div class="sec-hd">
+      <div class="sec-title">CALORIE<br>TRACKER</div>
+      <div class="sec-sub">Calculate energy burned by activity</div>
+    </div>
+
+    <div class="card card-accent">
+      <div class="field">
+        <label>Body Weight (kg)</label>
+        <input type="number" id="calWt" value="60" min="30" max="200">
+      </div>
+      <div class="field">
+        <label>Activity</label>
+        <select id="calAct">
+          <option value="3.5">🚶 Brisk walking</option>
+          <option value="1.5">🚶 Slow walking</option>
+          <option value="7.0">🏃 Jogging</option>
+          <option value="10.0">🏃 Running (fast)</option>
+          <option value="4.0">🚴 Cycling (light)</option>
+          <option value="8.0">🚴 Cycling (moderate)</option>
+          <option value="6.0">🏊 Swimming</option>
+          <option value="5.0">🧘 Yoga / Stretching</option>
+          <option value="3.8">💃 Dancing</option>
+          <option value="8.0">⚽ Football / Basketball</option>
+          <option value="5.0">🏋️ Weight Training</option>
+          <option value="7.0">🤸 HIIT / Aerobics</option>
+          <option value="2.5">🪑 Desk Exercises</option>
+          <option value="1.3">🧍 Standing</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Duration (minutes)</label>
+        <input type="number" id="calDur" value="30" min="1" max="300">
+      </div>
+      <button class="btn btn-orange" onclick="calcCal()">🔥 CALCULATE</button>
+
+      <div class="cal-result" id="calResult">
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--grey);margin-bottom:4px;font-weight:700">CALORIES BURNED</div>
+        <div class="cal-num" id="calNum">0</div>
+        <div class="cal-unit">KCAL</div>
+        <div class="cal-equiv" id="calEquiv"></div>
+        <button class="btn btn-ghost btn-sm" onclick="logCal()" style="margin-top:12px;width:auto">+ LOG THIS</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:12px">TODAY'S LOG</div>
+      <div id="calLog" style="font-size:12px;color:var(--grey);text-align:center;padding:12px 0">No activities logged yet</div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--grey);font-weight:600">TOTAL TODAY</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--orange)" id="calTotal">0 KCAL</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TIMER
+  ══════════════════════════════════════ -->
+  <div class="section" id="sec-timer">
+    <div class="sec-hd">
+      <div class="sec-title">WORKOUT<br>TIMER</div>
+      <div class="sec-sub">Countdown, HIIT, Tabata with voice coaching</div>
+    </div>
+
+    <div class="card card-accent">
+      <div class="timer-verbal" id="tmVerbal">Choose a coaching mode below and press Start.</div>
+
+      <div class="timer-hero">
+        <div class="timer-display" id="bigTime">00:00</div>
+        <div class="timer-phase" id="bigPhase">READY</div>
+      </div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label>Coaching Mode</label>
+        <select id="tmMode" onchange="tmModeChange()">
+          <option value="free">🕐 Free Stopwatch</option>
+          <option value="hiit">🔥 HIIT — 20s on / 10s rest</option>
+          <option value="tabata">⚡ Tabata — 8 rounds</option>
+          <option value="stretch">🧘 Stretch — 30s holds</option>
+          <option value="run">🏃 Timed Run</option>
+          <option value="custom">⚙️ Custom Countdown</option>
+        </select>
+      </div>
+
+      <div id="customBox" style="display:none;margin-bottom:12px">
+        <div class="field">
+          <label>Duration (seconds)</label>
+          <input type="number" id="tmCustomSecs" value="60" min="5" oninput="tmSet(parseInt(this.value)||60)">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-lime" id="tmBtn" onclick="tmToggle()">▶ START</button>
+        <button class="btn btn-ghost btn-sm" style="width:auto;padding:15px 20px" onclick="tmReset()">↺</button>
+      </div>
+
+      <div class="divider"></div>
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:10px">QUICK SET</div>
+      <div class="quick-btns">
+        <button class="btn btn-ghost btn-sm" onclick="tmSet(30)">30S</button>
+        <button class="btn btn-ghost btn-sm" onclick="tmSet(45)">45S</button>
+        <button class="btn btn-ghost btn-sm" onclick="tmSet(60)">1 MIN</button>
+        <button class="btn btn-ghost btn-sm" onclick="tmSet(90)">90S</button>
+        <button class="btn btn-ghost btn-sm" onclick="tmSet(120)">2 MIN</button>
+        <button class="btn btn-ghost btn-sm" onclick="tmSet(300)">5 MIN</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grey);font-weight:700;margin-bottom:12px">SET TRACKER</div>
+      <div id="wkList"></div>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="addWkEx()">+ ADD EXERCISE</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <button class="nb active" onclick="go('desk',this)"><span class="nb-icon">🪑</span>DESK</button>
+  <button class="nb" onclick="go('steps',this)"><span class="nb-icon">🧘</span>YOGA</button>
+  <button class="nb" onclick="go('cal',this)"><span class="nb-icon">🔥</span>CALS</button>
+  <button class="nb" onclick="go('timer',this)"><span class="nb-icon">⏱</span>TIMER</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Date ───────────────────────────────────────────────────────────────
+document.getElementById('dateStrip').textContent=
+  new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+
+// ── Nav ────────────────────────────────────────────────────────────────
+function go(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────
+function toast(msg,dur=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ── ZEN MUSIC ─────────────────────────────────────────────────────────
+let zenOn=false,AC=null,zenNodes=[];
+function toggleZen(){
+  zenOn=!zenOn;
+  document.getElementById('zenBtn').classList.toggle('on',zenOn);
+  document.getElementById('zenLabel').textContent=zenOn?'Music On':'Music';
+  if(zenOn){startZen();toast('🎵 Music on');}
+  else{stopZen();toast('🎵 Music off');}
+}
+function startZen(){
+  try{
+    AC=new(window.AudioContext||window.webkitAudioContext)();
+    const master=AC.createGain();master.gain.value=0.15;master.connect(AC.destination);
+    // Drone base
+    [130.81,196].forEach(f=>{
+      const o=AC.createOscillator(),g=AC.createGain(),flt=AC.createBiquadFilter();
+      flt.type='lowpass';flt.frequency.value=350;
+      o.type='sine';o.frequency.value=f;g.gain.value=0.05;
+      o.connect(flt);flt.connect(g);g.connect(master);o.start();zenNodes.push(o);
+    });
+    // Pentatonic notes
+    const notes=[196,220,261.63,293.66,349.23,392,440];
+    function note(){
+      if(!zenOn)return;
+      const f=notes[Math.floor(Math.random()*notes.length)]*(Math.random()<0.25?2:1);
+      const o=AC.createOscillator(),g=AC.createGain();
+      o.type='sine';o.frequency.value=f;
+      g.gain.setValueAtTime(0,AC.currentTime);
+      g.gain.linearRampToValueAtTime(0.1,AC.currentTime+0.06);
+      g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+2.2);
+      o.connect(g);g.connect(master);o.start();o.stop(AC.currentTime+2.5);
+      setTimeout(note,1400+Math.random()*2200);
+    }
+    setTimeout(note,300);
+    // Bowl
+    function bowl(){
+      if(!zenOn)return;
+      [220,440,660,880].forEach((f,i)=>{
+        const o=AC.createOscillator(),g=AC.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,AC.currentTime);
+        g.gain.linearRampToValueAtTime(0.035/(i+1),AC.currentTime+0.08);
+        g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+4.5);
+        o.connect(g);g.connect(master);o.start();o.stop(AC.currentTime+5);
+      });
+      setTimeout(bowl,7000+Math.random()*5000);
+    }
+    setTimeout(bowl,1500);
+  }catch(e){}
+}
+function stopZen(){
+  zenNodes.forEach(n=>{try{n.stop();}catch(e){}});zenNodes=[];
+  if(AC){try{AC.close();}catch(e){}}AC=null;
+}
+function beep(f=600,d=0.1,t='sine'){
+  try{
+    const ctx=AC||new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type=t;o.frequency.value=f;
+    g.gain.setValueAtTime(0.28,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d);
+    o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d);
+  }catch(e){}
+}
+function chime(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.18),i*85));}
+
+// ── SPEECH ─────────────────────────────────────────────────────────────
+let voicesLoaded=false,vList=[];
+function initTTS(){
+  if(!('speechSynthesis' in window))return;
+  const load=()=>{vList=window.speechSynthesis.getVoices();if(vList.length)voicesLoaded=true;};
+  load();window.speechSynthesis.onvoiceschanged=load;
+  document.addEventListener('click',warmTTS,{once:true});
+  document.addEventListener('touchstart',warmTTS,{once:true});
+}
+function warmTTS(){
+  if(!('speechSynthesis' in window))return;
+  const u=new SpeechSynthesisUtterance(' ');u.volume=0;u.rate=3;
+  window.speechSynthesis.speak(u);
+  vList=window.speechSynthesis.getVoices();voicesLoaded=true;
+}
+function speak(txt){
+  if(!('speechSynthesis' in window)||!txt)return;
+  try{window.speechSynthesis.cancel();}catch(e){}
+  setTimeout(()=>{
+    try{
+      const u=new SpeechSynthesisUtterance(txt);
+      u.rate=0.9;u.pitch=1.05;u.volume=1;u.lang='en-US';
+      const vs=window.speechSynthesis.getVoices()||vList;
+      const v=vs.find(v=>v.name==='Samantha')||vs.find(v=>v.name==='Karen')||
+        vs.find(v=>v.name.includes('Google UK English Female'))||
+        vs.find(v=>v.name.includes('Microsoft Zira'))||
+        vs.find(v=>v.lang.startsWith('en')&&v.name.toLowerCase().includes('female'))||
+        vs.find(v=>v.lang.startsWith('en'));
+      if(v)u.voice=v;
+      window.speechSynthesis.speak(u);
+      if(!window._ttsFix)window._ttsFix=setInterval(()=>{
+        if(window.speechSynthesis.paused)window.speechSynthesis.resume();
+      },5000);
+    }catch(e){}
+  },100);
+}
+function testVoice(){
+  warmTTS();
+  setTimeout(()=>speak('Hello! Voice coach is ready. Let us work out together!'),200);
+  toast('🔊 Testing voice...');
+}
+initTTS();
+
+// ── DESK WORKOUT ────────────────────────────────────────────────────────
+const EX=[
+  {name:'NECK ROLLS',e:'🔄',reps:10,unit:'each side',dur:30,cal:2,
+   desc:'Sit tall. Slowly roll your head in full circles. Keep shoulders relaxed.',
+   cues:['Sit up nice and tall. Let your shoulders drop down.','Slowly roll your head to the right... back... left... forward.','Breathe in as you roll back, breathe out as you come forward.','Wonderful. Five more seconds. Keep it smooth.'],
+   fig:'neck',m:['Neck','Upper Traps']},
+  {name:'SHOULDER SHRUGS',e:'🤷',reps:20,unit:'reps',dur:30,cal:3,
+   desc:'Lift shoulders to ears, hold 2 seconds, lower slowly. Feel tension melt.',
+   cues:['Lift both shoulders up toward your ears.','Hold at the top... feel the squeeze... and release.','This releases all that study tension. Keep going.','You are doing brilliantly. Almost there.'],
+   fig:'shrug',m:['Shoulders','Upper Back']},
+  {name:'ARM CIRCLES',e:'💪',reps:15,unit:'each direction',dur:40,cal:3,
+   desc:'Arms out to sides. 15 circles forward, then 15 in reverse. Keep arms straight.',
+   cues:['Extend your arms straight out to the sides.','Begin circling forward. Small, controlled circles.','Now reverse direction. Feel those shoulder muscles engage.','Great movement. Keep the energy up!'],
+   fig:'arm_circles',m:['Shoulders','Arms']},
+  {name:'SEATED LEG RAISES',e:'🦵',reps:15,unit:'each leg',dur:40,cal:5,
+   desc:'Extend one leg parallel to floor, hold 2 seconds. Alternate legs. Engage core.',
+   cues:['Sit at the edge of your chair. Back straight.','Straighten your right leg and raise it up.','Hold it there... two... one... now lower slowly. Switch legs.','Excellent core work. Feel those hip flexors!'],
+   fig:'leg_raise',m:['Quads','Core']},
+  {name:'CHAIR SQUATS',e:'🪑',reps:10,unit:'reps',dur:40,cal:8,
+   desc:'Stand in front of chair. Lower slowly — stop just above seat. Pause, rise up strong.',
+   cues:['Stand up in front of your chair. Feet shoulder-width apart.','Lower down slowly... just above the seat... pause...','Push through your heels and rise back up. Power!','This is the most effective move in the set. Make it count.'],
+   fig:'squat',m:['Quads','Glutes','Core']},
+  {name:'CALF RAISES',e:'👟',reps:20,unit:'reps',dur:30,cal:4,
+   desc:'Hold chair back. Rise onto tiptoes as high as possible. Hold 1 second, lower slowly.',
+   cues:['Hold the back of your chair for balance.','Rise up onto your tiptoes — as high as you can go!','Hold at the top... and lower with control.','This boosts circulation after sitting. Keep going!'],
+   fig:'calf_raise',m:['Calves','Balance']},
+  {name:'TORSO TWISTS',e:'🌀',reps:10,unit:'each side',dur:30,cal:3,
+   desc:'Hands on shoulders. Rotate upper body right, centre, left. Feel the spine move.',
+   cues:['Final exercise! Sit very tall. Hands on shoulders.','Rotate smoothly to the right... and back to centre.','Now left... and centre. Feel your spine wake up.','Last few reps. You are almost done. Finish strong!'],
+   fig:'twist',m:['Core','Obliques']},
+];
+
+let dCur=-1,dStarted=false,dDone=new Array(EX.length).fill(false);
+let dTimer=null,dAnim=null,dVerbal=null,dFrame=0,dStart=null;
+
+const COL='#c8f135';
+function drawFig(type,frame){
+  const g=document.getElementById('figG');
+  const s=Math.sin(frame/30*Math.PI*2),c=Math.cos(frame/30*Math.PI*2);
+  const sk=`stroke="${COL}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"`;
+  const figs={
+    neck:()=>`
+      <circle cx="80" cy="26" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="96" ${sk}/>
+      <line x1="80" y1="64" x2="${50+s*12}" y2="84" ${sk}/>
+      <line x1="80" y1="64" x2="${110-s*12}" y2="84" ${sk}/>
+      <line x1="80" y1="96" x2="${64+s*6}" y2="144" ${sk}/>
+      <line x1="80" y1="96" x2="${96-s*6}" y2="144" ${sk}/>
+      <line x1="${64+s*6}" y1="144" x2="${61+s*6}" y2="172" ${sk}/>
+      <line x1="${96-s*6}" y1="144" x2="${99-s*6}" y2="172" ${sk}/>
+      <path d="M ${68+s*8} ${16+c*4} A 16 16 0 0 1 ${92-s*8} ${16+c*4}" fill="none" stroke="rgba(200,241,53,0.35)" stroke-width="2.5" stroke-dasharray="5 3"/>`,
+    shrug:()=>`
+      <circle cx="80" cy="26" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="98" ${sk}/>
+      <line x1="80" y1="${54-s*13}" x2="40" y2="${58-s*10}" ${sk}/>
+      <line x1="80" y1="${54-s*13}" x2="120" y2="${58-s*10}" ${sk}/>
+      <line x1="40" y1="${58-s*10}" x2="28" y2="${80-s*8}" ${sk}/>
+      <line x1="120" y1="${58-s*10}" x2="132" y2="${80-s*8}" ${sk}/>
+      <line x1="80" y1="98" x2="64" y2="144" ${sk}/>
+      <line x1="80" y1="98" x2="96" y2="144" ${sk}/>
+      <line x1="64" y1="144" x2="61" y2="172" ${sk}/>
+      <line x1="96" y1="144" x2="99" y2="172" ${sk}/>`,
+    arm_circles:()=>`
+      <circle cx="80" cy="26" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="98" ${sk}/>
+      <line x1="80" y1="64" x2="${20+c*20}" y2="${64+s*20}" ${sk}/>
+      <line x1="80" y1="64" x2="${140-c*20}" y2="${64-s*20}" ${sk}/>
+      <circle cx="${20+c*20}" cy="${64+s*20}" r="5" fill="${COL}"/>
+      <circle cx="${140-c*20}" cy="${64-s*20}" r="5" fill="${COL}"/>
+      <line x1="80" y1="98" x2="64" y2="144" ${sk}/>
+      <line x1="80" y1="98" x2="96" y2="144" ${sk}/>
+      <line x1="64" y1="144" x2="61" y2="172" ${sk}/>
+      <line x1="96" y1="144" x2="99" y2="172" ${sk}/>`,
+    leg_raise:()=>`
+      <circle cx="80" cy="26" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="96" ${sk}/>
+      <line x1="80" y1="64" x2="50" y2="82" ${sk}/>
+      <line x1="80" y1="64" x2="110" y2="82" ${sk}/>
+      <line x1="80" y1="96" x2="66" y2="132" ${sk}/>
+      <line x1="80" y1="96" x2="94" y2="132" ${sk}/>
+      <line x1="66" y1="132" x2="${34+s*16}" y2="${112-s*14}" ${sk}/>
+      <line x1="94" y1="132" x2="100" y2="168" ${sk}/>
+      <circle cx="${34+s*16}" cy="${112-s*14}" r="5" fill="${COL}" opacity=".8"/>
+      <line x1="44" y1="144" x2="108" y2="144" stroke="rgba(200,241,53,0.15)" stroke-width="3"/>`,
+    squat:()=>{
+      const sq=0.36+Math.abs(s)*0.38,hy=70+sq*40;
+      return`<circle cx="80" cy="24" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="42" x2="80" y2="${hy}" ${sk}/>
+      <line x1="80" y1="58" x2="48" y2="76" ${sk}/>
+      <line x1="80" y1="58" x2="112" y2="76" ${sk}/>
+      <line x1="80" y1="${hy}" x2="60" y2="${hy+38}" ${sk}/>
+      <line x1="80" y1="${hy}" x2="100" y2="${hy+38}" ${sk}/>
+      <line x1="60" y1="${hy+38}" x2="55" y2="${hy+60}" ${sk}/>
+      <line x1="100" y1="${hy+38}" x2="105" y2="${hy+60}" ${sk}/>
+      <line x1="38" y1="140" x2="122" y2="140" stroke="rgba(200,241,53,0.12)" stroke-width="3"/>`;},
+    calf_raise:()=>{
+      const r=Math.max(0,s);
+      return`<circle cx="80" cy="26" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="96" ${sk}/>
+      <line x1="80" y1="62" x2="48" y2="80" ${sk}/>
+      <line x1="80" y1="62" x2="112" y2="80" ${sk}/>
+      <line x1="48" y1="80" x2="36" y2="92" ${sk}/>
+      <line x1="112" y1="80" x2="124" y2="92" ${sk}/>
+      <line x1="80" y1="96" x2="62" y2="140" ${sk}/>
+      <line x1="80" y1="96" x2="98" y2="140" ${sk}/>
+      <line x1="62" y1="140" x2="${57}" y2="${162-r*18}" ${sk}/>
+      <line x1="98" y1="140" x2="${103}" y2="${162-r*18}" ${sk}/>
+      <line x1="30" y1="84" x2="30" y2="165" stroke="rgba(200,241,53,0.18)" stroke-width="3"/>
+      <line x1="130" y1="84" x2="130" y2="165" stroke="rgba(200,241,53,0.18)" stroke-width="3"/>`;},
+    twist:()=>{
+      const tw=s*20;
+      return`<circle cx="80" cy="26" r="18" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="${80+tw*0.28}" y2="70" ${sk}/>
+      <line x1="${80+tw*0.28}" y1="70" x2="80" y2="98" ${sk}/>
+      <line x1="${80+tw*0.28}" y1="60" x2="${42+tw}" y2="78" ${sk}/>
+      <line x1="${80+tw*0.28}" y1="60" x2="${118+tw}" y2="78" ${sk}/>
+      <line x1="80" y1="98" x2="64" y2="144" ${sk}/>
+      <line x1="80" y1="98" x2="96" y2="144" ${sk}/>
+      <line x1="64" y1="144" x2="61" y2="172" ${sk}/>
+      <line x1="96" y1="144" x2="99" y2="172" ${sk}/>
+      <line x1="42" y1="142" x2="118" y2="142" stroke="rgba(200,241,53,0.12)" stroke-width="3"/>`;},
+  };
+  g.innerHTML=figs[type]?figs[type]():figs.neck();
+}
+
+function renderExList(){
+  document.getElementById('exList').innerHTML=EX.map((e,i)=>`
+    <div class="ex-item ${dDone[i]?'ex-done':''} ${i===dCur?'ex-active':''}" onclick="deskJump(${i})">
+      <div class="ex-num">${dDone[i]?'✓':(i+1)}</div>
+      <div class="ex-info">
+        <div class="ex-name">${e.e} ${e.name}</div>
+        <div class="ex-detail">${e.reps} ${e.unit} · ${e.dur}s</div>
+      </div>
+      <div class="ex-kcal">${e.cal}</div>
+    </div>`).join('');
+}
+
+function loadEx(i){
+  dCur=i;const ex=EX[i];
+  document.getElementById('exTitle').textContent=ex.name;
+  document.getElementById('exDesc').textContent=ex.desc;
+  document.getElementById('stageBadge').textContent=ex.e+' '+ex.name;
+  document.getElementById('exTags').innerHTML=`
+    <span class="tag tag-lime">${ex.reps} ${ex.unit}</span>
+    <span class="tag tag-grey">${ex.dur}S</span>
+    <span class="tag tag-grey">${ex.cal} KCAL</span>
+    ${ex.m.map(m=>`<span class="tag tag-grey">${m}</span>`).join('')}`;
+  document.getElementById('repNum').textContent='0';
+  document.getElementById('repUnit').textContent=ex.unit.toUpperCase();
+  document.getElementById('deskProg').style.width=(i/EX.length*100)+'%';
+  document.getElementById('deskPct').textContent=i+' / '+EX.length;
+  renderExList();
+  // Animation
+  clearInterval(dAnim);dFrame=0;
+  dAnim=setInterval(()=>{
+    dFrame=(dFrame+1)%60;
+    drawFig(ex.fig,dFrame);
+    document.getElementById('repNum').textContent=Math.min(Math.floor(dFrame/60*ex.reps)+1,ex.reps);
+  },50);
+  // Countdown timer
+  clearInterval(dTimer);let secs=ex.dur;
+  document.getElementById('exTimer').classList.add('show');
+  document.getElementById('timerNum').textContent=secs;
+  dTimer=setInterval(()=>{
+    secs--;
+    document.getElementById('timerNum').textContent=secs;
+    if(secs<=3&&secs>0)beep(440,0.06,'square');
+    if(secs<=0){clearInterval(dTimer);beep(660,0.15);dMarkDone();}
+  },1000);
+  // Verbal cues
+  clearInterval(dVerbal);let vi=0;
+  function sayV(){
+    if(vi<ex.cues.length){
+      document.getElementById('coachBox').textContent=ex.cues[vi];
+      speak(ex.cues[vi]);vi++;
+    }
+  }
+  sayV();
+  dVerbal=setInterval(()=>{sayV();if(vi>=ex.cues.length)clearInterval(dVerbal);},(ex.dur*1000)/ex.cues.length);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function dMarkDone(){
+  if(dCur<0)return;
+  dDone[dCur]=true;chime();
+  toast('✓ '+EX[dCur].name+' DONE!');
+  clearInterval(dAnim);clearInterval(dVerbal);
+  if(dCur<EX.length-1)setTimeout(()=>loadEx(dCur+1),700);
+  else dFinish();
+}
+
+function deskStart(){
+  if(!dStarted){
+    dStarted=true;dStart=Date.now();
+    document.getElementById('startBtn').textContent='✓ COMPLETE & NEXT';
+    document.getElementById('prevBtn').disabled=false;
+    document.getElementById('skipBtn').disabled=false;
+    document.getElementById('stopBtn').style.display='block';
+    speak('Welcome to PULSE desk workout. Let us move!');
+    loadEx(0);
+  }else dMarkDone();
+}
+function deskSkip(){
+  if(dCur<EX.length-1){clearInterval(dTimer);clearInterval(dAnim);clearInterval(dVerbal);loadEx(dCur+1);}
+}
+function deskPrev(){
+  if(dCur>0){clearInterval(dTimer);clearInterval(dAnim);clearInterval(dVerbal);loadEx(dCur-1);}
+}
+function deskJump(i){
+  if(!dStarted)return;
+  clearInterval(dTimer);clearInterval(dAnim);clearInterval(dVerbal);loadEx(i);
+}
+function deskStop(){
+  clearInterval(dTimer);clearInterval(dAnim);clearInterval(dVerbal);
+  dStarted=false;dCur=-1;
+  document.getElementById('startBtn').textContent='▶ BEGIN WORKOUT';
+  document.getElementById('prevBtn').disabled=true;
+  document.getElementById('skipBtn').disabled=true;
+  document.getElementById('stopBtn').style.display='none';
+  document.getElementById('exTimer').classList.remove('show');
+  document.getElementById('exTitle').textContent='WORKOUT STOPPED';
+  document.getElementById('exDesc').textContent='Good effort! Rest up, then press Begin when you are ready to go again.';
+  document.getElementById('coachBox').textContent='Workout stopped. Well done for what you completed today!';
+  document.getElementById('figG').innerHTML='';
+  document.getElementById('repNum').textContent='0';
+  speak('Workout stopped. Good effort today!');
+  renderExList();toast('⏹ STOPPED');
+}
+function dFinish(){
+  clearInterval(dTimer);clearInterval(dAnim);clearInterval(dVerbal);
+  document.getElementById('deskMain').style.display='none';
+  const mins=Math.round((Date.now()-dStart)/60000)||5;
+  document.getElementById('finMins').textContent=mins;
+  document.getElementById('deskFinish').classList.add('show');
+  document.getElementById('deskProg').style.width='100%';
+  document.getElementById('deskPct').textContent='7 / 7';
+  renderExList();
+  speak('Workout complete! You crushed it today. Outstanding effort!');
+  chime();setTimeout(chime,500);
+  toast('🏆 WORKOUT COMPLETE!',3000);
+}
+function restartDesk(){
+  dDone=new Array(EX.length).fill(false);dStarted=false;dCur=-1;dStart=null;
+  document.getElementById('deskFinish').classList.remove('show');
+  document.getElementById('deskMain').style.display='block';
+  document.getElementById('startBtn').textContent='▶ BEGIN WORKOUT';
+  document.getElementById('prevBtn').disabled=true;document.getElementById('skipBtn').disabled=true;
+  document.getElementById('stopBtn').style.display='none';
+  document.getElementById('exTimer').classList.remove('show');
+  document.getElementById('deskProg').style.width='0%';document.getElementById('deskPct').textContent='0 / 7';
+  document.getElementById('exTitle').textContent='READY TO START?';
+  document.getElementById('exDesc').textContent='7 exercises designed for students. No equipment needed — just a chair and 5 minutes.';
+  document.getElementById('exTags').innerHTML='<span class="tag tag-lime">7 EXERCISES</span><span class="tag tag-grey">~5 MIN</span><span class="tag tag-grey">~28 KCAL</span>';
+  document.getElementById('coachBox').textContent='Press Begin to start your 5-minute desk workout session.';
+  document.getElementById('figG').innerHTML='';document.getElementById('repNum').textContent='0';
+  renderExList();
+}
+renderExList();drawFig('neck',0);
+
+// ── YOGA FLOW ──────────────────────────────────────────────────────────
+const YOGA=[
+  {name:'MOUNTAIN POSE',sanskrit:'Tadasana',e:'🏔',hold:30,cal:2,
+   desc:'Stand tall, feet together, arms at sides. Root into the ground. Breathe deeply and find stillness.',
+   cues:['Stand with your feet together. Arms relaxed at your sides.','Feel your weight evenly distributed. Ground yourself.','Lengthen through your spine — imagine a string pulling the crown of your head upward.','Breathe deeply. This is your foundation pose. Stay rooted.'],
+   fig:'mountain',benefit:'Posture · Balance · Grounding',
+   ytId:'gEEXnJBpP4Y',ytTitle:'Mountain Pose Tutorial (Yoga with Adriene)'},
+  {name:'FORWARD FOLD',sanskrit:'Uttanasana',e:'🙇',hold:30,cal:3,
+   desc:'Hinge at hips, fold forward. Let your head hang heavy. Bend knees slightly if needed.',
+   cues:['Inhale to stand tall. Now exhale and hinge forward at your hips.','Let your head hang heavy. Release all the tension from your neck.','Bend your knees generously if your hamstrings are tight — that is perfectly fine.','With every exhale, melt a little deeper into this fold.'],
+   fig:'forward_fold',benefit:'Hamstrings · Spine · Stress Relief',
+   ytId:'g7Uhp5tphAs',ytTitle:'Standing Forward Fold Tutorial'},
+  {name:'WARRIOR I',sanskrit:'Virabhadrasana I',e:'⚔',hold:30,cal:5,
+   desc:'Step right foot back, bend front knee. Arms reach overhead. Strong and grounded.',
+   cues:['Step your right foot back into a lunge. Front knee over the ankle.','Square your hips to the front. Raise both arms overhead, palms facing each other.','Feel the strength in your legs. You are a warrior — powerful and steady.','Hold this shape. Breathe into the stretch across your chest and hips.'],
+   fig:'warrior1',benefit:'Legs · Core · Confidence',
+   ytId:'k4KaSSOp_-A',ytTitle:'Warrior I Tutorial — Virabhadrasana I'},
+  {name:'WARRIOR II',sanskrit:'Virabhadrasana II',e:'🛡',hold:30,cal:5,
+   desc:'Open hips to the side. Arms extend parallel to the floor. Gaze over front fingers.',
+   cues:['From Warrior One, open your hips and arms out to the sides.','Both arms are parallel to the floor. Gaze is forward over your front hand.','Sink deeper into that front knee. Keep your back leg strong and straight.','This pose builds both physical strength and mental focus. Breathe steadily.'],
+   fig:'warrior2',benefit:'Legs · Hip Flexors · Focus',
+   ytId:'4Ejz7IgODlU',ytTitle:'Warrior II Tutorial — Virabhadrasana II'},
+  {name:'DOWNWARD DOG',sanskrit:'Adho Mukha Svanasana',e:'🐕',hold:40,cal:5,
+   desc:'Hands and feet on floor, hips high. Form an inverted V. Press heels toward the ground.',
+   cues:['Come onto all fours. Tuck your toes and press your hips up and back.','Form an inverted V shape with your body. Arms and spine long.','Press through your palms and reach your heels toward the floor — they do not need to touch.','This is a full body stretch. Breathe into any tightness you feel.'],
+   fig:'downdog',benefit:'Full Body · Energy · Circulation',
+   ytId:'j97SSGsnCAQ',ytTitle:'Downward Dog Tutorial (Adho Mukha Svanasana)'},
+  {name:'CHILD\'S POSE',sanskrit:'Balasana',e:'🙏',hold:40,cal:2,
+   desc:'Kneel and fold forward. Arms stretched or alongside body. A resting, restorative pose.',
+   cues:['Come to your knees and sit your hips back toward your heels.','Fold your torso forward and extend your arms out in front of you.','Rest your forehead on the mat. Let everything go.','This is your safe resting place. Breathe slowly. Release any tension.'],
+   fig:'childs_pose',benefit:'Recovery · Spine · Calm',
+   ytId:'2MJGg-dUKh0',ytTitle:"Child's Pose Tutorial — Balasana"},
+  {name:'SEATED TWIST',sanskrit:'Ardha Matsyendrasana',e:'🌀',hold:30,cal:3,
+   desc:'Sit tall, cross one leg. Twist gently toward the raised knee. Breathe and deepen.',
+   cues:['Sit with legs extended. Cross your right foot over to the outside of your left knee.','Place your right hand behind you and hook your left elbow outside the right knee.','Inhale to lengthen. Exhale to twist deeper to the right.','Twists detoxify and energise the spine. Hold gently, do not force it.'],
+   fig:'seated_twist',benefit:'Spine · Digestion · Detox',
+   ytId:'OJlbSMtLinI',ytTitle:'Seated Spinal Twist Tutorial'},
+  {name:'CORPSE POSE',sanskrit:'Savasana',e:'😴',hold:60,cal:1,
+   desc:'Lie flat on your back. Arms at sides, palms up. Close your eyes. Simply be still.',
+   cues:['Lie completely flat on your back. Let your feet fall open naturally.','Place your arms a few inches from your body, palms facing upward.','Close your eyes. Release every muscle. You have nothing to do right now.','Simply breathe. Absorb the benefits of your practice. Rest here in stillness.'],
+   fig:'savasana',benefit:'Rest · Integration · Peace',
+   ytId:'1VYlOKygBqc',ytTitle:'Savasana Guided Relaxation — Corpse Pose'},
+];
+
+let yCur=-1,yStarted=false,yDone=new Array(YOGA.length).fill(false);
+let yTimer=null,yAnim=null,yVerbal=null,yFrame=0,yStart=null;
+
+const YCOL='#c8f135';
+function drawYoga(type,frame){
+  const g=document.getElementById('yogaFigG');
+  const s=Math.sin(frame/60*Math.PI*2)*0.3; // subtle breath animation
+  const sk=`stroke="${YCOL}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"`;
+  const figs={
+    mountain:()=>`
+      <circle cx="80" cy="28" r="16" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="100" ${sk}/>
+      <line x1="80" y1="62" x2="${54+s*6}" y2="${82+s*4}" ${sk}/>
+      <line x1="80" y1="62" x2="${106-s*6}" y2="${82+s*4}" ${sk}/>
+      <line x1="${54+s*6}" y1="${82+s*4}" x2="${50+s*6}" y2="${106+s*2}" ${sk}/>
+      <line x1="${106-s*6}" y1="${82+s*4}" x2="${110-s*6}" y2="${106+s*2}" ${sk}/>
+      <line x1="80" y1="100" x2="66" y2="148" ${sk}/>
+      <line x1="80" y1="100" x2="94" y2="148" ${sk}/>
+      <line x1="66" y1="148" x2="62" y2="175" ${sk}/>
+      <line x1="94" y1="148" x2="98" y2="175" ${sk}/>
+      <line x1="50" y1="175" x2="110" y2="175" stroke="rgba(200,241,53,0.15)" stroke-width="3"/>`,
+    forward_fold:()=>`
+      <circle cx="80" cy="28" r="16" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="88" ${sk}/>
+      <line x1="80" y1="60" x2="50" y2="78" ${sk}/>
+      <line x1="80" y1="60" x2="110" y2="78" ${sk}/>
+      <line x1="50" y1="78" x2="${44+s*4}" y2="102" ${sk}/>
+      <line x1="110" y1="78" x2="${116-s*4}" y2="102" ${sk}/>
+      <line x1="80" y1="88" x2="68" y2="130" ${sk}/>
+      <line x1="80" y1="88" x2="92" y2="130" ${sk}/>
+      <line x1="68" y1="130" x2="66" y2="158" ${sk}/>
+      <line x1="92" y1="130" x2="94" y2="158" ${sk}/>
+      <path d="M 68 158 Q 80 ${168+s*4} 94 158" fill="none" ${sk}/>`,
+    warrior1:()=>`
+      <circle cx="80" cy="24" r="16" fill="none" ${sk}/>
+      <line x1="80" y1="40" x2="80" y2="88" ${sk}/>
+      <line x1="80" y1="56" x2="${60+s*4}" y2="${42+s*6}" ${sk}/>
+      <line x1="80" y1="56" x2="${100-s*4}" y2="${42+s*6}" ${sk}/>
+      <line x1="${60+s*4}" y1="${42+s*6}" x2="${56+s*4}" y2="${22+s*4}" ${sk}/>
+      <line x1="${100-s*4}" y1="${42+s*6}" x2="${104-s*4}" y2="${22+s*4}" ${sk}/>
+      <line x1="80" y1="88" x2="56" y2="138" ${sk}/>
+      <line x1="80" y1="88" x2="104" y2="138" ${sk}/>
+      <line x1="56" y1="138" x2="46" y2="172" ${sk}/>
+      <line x1="104" y1="138" x2="112" y2="172" ${sk}/>
+      <line x1="36" y1="172" x2="122" y2="172" stroke="rgba(200,241,53,0.12)" stroke-width="2.5"/>`,
+    warrior2:()=>`
+      <circle cx="80" cy="28" r="16" fill="none" ${sk}/>
+      <line x1="80" y1="44" x2="80" y2="92" ${sk}/>
+      <line x1="80" y1="62" x2="${30+s*8}" y2="${64+s*4}" ${sk}/>
+      <line x1="80" y1="62" x2="${130-s*8}" y2="${64+s*4}" ${sk}/>
+      <line x1="${30+s*8}" y1="${64+s*4}" x2="${24+s*8}" y2="${68+s*4}" ${sk}/>
+      <line x1="${130-s*8}" y1="${64+s*4}" x2="${136-s*8}" y2="${68+s*4}" ${sk}/>
+      <line x1="80" y1="92" x2="52" y2="140" ${sk}/>
+      <line x1="80" y1="92" x2="108" y2="140" ${sk}/>
+      <line x1="52" y1="140" x2="44" y2="172" ${sk}/>
+      <line x1="108" y1="140" x2="116" y2="172" ${sk}/>
+      <line x1="34" y1="172" x2="126" y2="172" stroke="rgba(200,241,53,0.12)" stroke-width="2.5"/>`,
+    downdog:()=>`
+      <circle cx="38" cy="${100+s*4}" r="14" fill="none" ${sk}/>
+      <line x1="38" y1="${114+s*4}" x2="80" y2="72" ${sk}/>
+      <line x1="38" y1="${122+s*4}" x2="46" y2="${144+s*4}" ${sk}/>
+      <line x1="38" y1="${122+s*4}" x2="30" y2="${144+s*4}" ${sk}/>
+      <line x1="80" y1="72" x2="122" y2="114" ${sk}/>
+      <line x1="80" y1="80" x2="70" y2="80" ${sk}/>
+      <line x1="80" y1="80" x2="90" y2="80" ${sk}/>
+      <line x1="122" y1="114" x2="112" y2="148" ${sk}/>
+      <line x1="122" y1="114" x2="132" y2="148" ${sk}/>
+      <line x1="26" y1="148" x2="136" y2="148" stroke="rgba(200,241,53,0.12)" stroke-width="2.5"/>`,
+    childs_pose:()=>`
+      <circle cx="80" cy="${88+s*2}" r="14" fill="none" ${sk}/>
+      <line x1="80" y1="${102+s*2}" x2="80" y2="125" ${sk}/>
+      <line x1="80" y1="110" x2="50" y2="118" ${sk}/>
+      <line x1="80" y1="110" x2="110" y2="118" ${sk}/>
+      <line x1="50" y1="118" x2="${34+s*4}" y2="124" ${sk}/>
+      <line x1="110" y1="118" x2="${126-s*4}" y2="124" ${sk}/>
+      <line x1="80" y1="125" x2="60" y2="148" ${sk}/>
+      <line x1="80" y1="125" x2="100" y2="148" ${sk}/>
+      <line x1="60" y1="148" x2="54" y2="168" ${sk}/>
+      <line x1="100" y1="148" x2="106" y2="168" ${sk}/>
+      <line x1="40" y1="168" x2="120" y2="168" stroke="rgba(200,241,53,0.12)" stroke-width="2.5"/>`,
+    seated_twist:()=>{
+      const tw=s*14;
+      return`<circle cx="80" cy="40" r="16" fill="none" ${sk}/>
+      <line x1="80" y1="56" x2="${80+tw*0.3}" y2="96" ${sk}/>
+      <line x1="${80+tw*0.3}" y1="70" x2="${48+tw}" y2="86" ${sk}/>
+      <line x1="${80+tw*0.3}" y1="70" x2="${112+tw}" y2="86" ${sk}/>
+      <line x1="${48+tw}" y1="86" x2="${40+tw}" y2="110" ${sk}/>
+      <line x1="${112+tw}" y1="86" x2="${118+tw}" y2="110" ${sk}/>
+      <line x1="80" y1="96" x2="62" y2="148" ${sk}/>
+      <line x1="80" y1="96" x2="98" y2="130" ${sk}/>
+      <line x1="62" y1="148" x2="58" y2="172" ${sk}/>
+      <line x1="98" y1="130" x2="118" y2="148" ${sk}/>
+      <line x1="44" y1="172" x2="124" y2="172" stroke="rgba(200,241,53,0.12)" stroke-width="2.5"/>`;},
+    savasana:()=>`
+      <circle cx="80" cy="80" r="16" fill="none" ${sk}/>
+      <line x1="80" y1="96" x2="80" y2="130" ${sk}/>
+      <line x1="80" y1="106" x2="${44+s*6}" y2="112" ${sk}/>
+      <line x1="80" y1="106" x2="${116-s*6}" y2="112" ${sk}/>
+      <line x1="${44+s*6}" y1="112" x2="${36+s*6}" y2="130" ${sk}/>
+      <line x1="${116-s*6}" y1="112" x2="${124-s*6}" y2="130" ${sk}/>
+      <line x1="80" y1="130" x2="62" y2="166" ${sk}/>
+      <line x1="80" y1="130" x2="98" y2="166" ${sk}/>
+      <line x1="62" y1="166" x2="58" y2="186" ${sk}/>
+      <line x1="98" y1="166" x2="102" y2="186" ${sk}/>
+      <line x1="34" y1="186" x2="126" y2="186" stroke="rgba(200,241,53,0.08)" stroke-width="2.5"/>
+      <path d="M 64 80 Q 80 ${70+s*5} 96 80" fill="none" stroke="rgba(200,241,53,0.3)" stroke-width="2"/>`,
+  };
+  g.innerHTML=figs[type]?figs[type]():figs.mountain();
+}
+
+function renderYogaList(){
+  document.getElementById('yogaList').innerHTML=YOGA.map((p,i)=>`
+    <div class="ex-item ${yDone[i]?'ex-done':''} ${i===yCur?'ex-active':''}" onclick="yogaJump(${i})">
+      <div class="ex-num">${yDone[i]?'✓':(i+1)}</div>
+      <div class="ex-info">
+        <div class="ex-name">${p.e} ${p.name}</div>
+        <div class="ex-detail">${p.sanskrit} · Hold ${p.hold}s</div>
+      </div>
+      <div class="ex-kcal">${p.cal}</div>
+    </div>`).join('');
+}
+
+function loadYoga(i){
+  yCur=i;const pose=YOGA[i];
+  document.getElementById('yogaTitle').textContent=pose.name;
+  document.getElementById('yogaDesc').textContent=pose.desc;
+  document.getElementById('yogaBadge').textContent=pose.e+' '+pose.sanskrit;
+  document.getElementById('yogaTags').innerHTML=`
+    <span class="tag tag-lime">HOLD ${pose.hold}S</span>
+    <span class="tag tag-grey">${pose.cal} KCAL</span>
+    <span class="tag tag-grey">${pose.benefit}</span>`;
+  document.getElementById('yogaHoldNum').textContent='0';
+  document.getElementById('yogaProg').style.width=(i/YOGA.length*100)+'%';
+  document.getElementById('yogaPct').textContent=i+' / '+YOGA.length;
+  renderYogaList();
+  // Animation — gentle breathing loop
+  clearInterval(yAnim);yFrame=0;
+  yAnim=setInterval(()=>{
+    yFrame=(yFrame+1)%60;
+    drawYoga(pose.fig,yFrame);
+    document.getElementById('yogaHoldNum').textContent=Math.min(Math.floor(yFrame/60*pose.hold)+1,pose.hold);
+  },50);
+  // Hold countdown
+  clearInterval(yTimer);let secs=pose.hold;
+  document.getElementById('yogaTimer').classList.add('show');
+  document.getElementById('yogaTimerNum').textContent=secs;
+  yTimer=setInterval(()=>{
+    secs--;
+    document.getElementById('yogaTimerNum').textContent=secs;
+    if(secs<=3&&secs>0)beep(330,0.08,'sine');
+    if(secs<=0){clearInterval(yTimer);beep(440,0.2,'sine');setTimeout(()=>beep(554,0.2,'sine'),200);yMarkDone();}
+  },1000);
+  // Verbal cues
+  clearInterval(yVerbal);let vi=0;
+  function sayV(){
+    if(vi<pose.cues.length){
+      document.getElementById('yogaCoach').textContent=pose.cues[vi];
+      speak(pose.cues[vi]);vi++;
+    }
+  }
+  sayV();
+  yVerbal=setInterval(()=>{sayV();if(vi>=pose.cues.length)clearInterval(yVerbal);},(pose.hold*1000)/pose.cues.length);
+  window.scrollTo({top:0,behavior:'smooth'});
+  loadYogaVideo(pose);
+}
+
+function yMarkDone(){
+  if(yCur<0)return;
+  yDone[yCur]=true;
+  toast('🧘 '+YOGA[yCur].name+' COMPLETE');
+  clearInterval(yAnim);clearInterval(yVerbal);
+  if(yCur<YOGA.length-1)setTimeout(()=>loadYoga(yCur+1),800);
+  else yFinish();
+}
+
+function yogaStart(){
+  if(!yStarted){
+    yStarted=true;yStart=Date.now();
+    document.getElementById('yogaStartBtn').textContent='✓ DONE & NEXT POSE';
+    document.getElementById('yogaPrevBtn').disabled=false;
+    document.getElementById('yogaSkipBtn').disabled=false;
+    document.getElementById('yogaStopBtn').style.display='block';
+    speak('Welcome to your yoga flow. Find a comfortable space, breathe deeply, and let us begin.');
+    loadYoga(0);
+  }else yMarkDone();
+}
+function yogaSkip(){
+  if(yCur<YOGA.length-1){clearInterval(yTimer);clearInterval(yAnim);clearInterval(yVerbal);loadYoga(yCur+1);}
+}
+function yogaPrev(){
+  if(yCur>0){clearInterval(yTimer);clearInterval(yAnim);clearInterval(yVerbal);loadYoga(yCur-1);}
+}
+function yogaJump(i){
+  if(!yStarted)return;
+  clearInterval(yTimer);clearInterval(yAnim);clearInterval(yVerbal);loadYoga(i);
+}
+function yogaStop(){
+  clearInterval(yTimer);clearInterval(yAnim);clearInterval(yVerbal);
+  yStarted=false;yCur=-1;
+  document.getElementById('yogaStartBtn').textContent='▶ BEGIN FLOW';
+  document.getElementById('yogaPrevBtn').disabled=true;
+  document.getElementById('yogaSkipBtn').disabled=true;
+  document.getElementById('yogaStopBtn').style.display='none';
+  document.getElementById('yogaTimer').classList.remove('show');
+  document.getElementById('yogaTitle').textContent='SESSION ENDED';
+  document.getElementById('yogaDesc').textContent='Well done. Rest, hydrate, and come back to the mat anytime.';
+  document.getElementById('yogaCoach').textContent='Session ended. Namaste — the light in me honours the light in you.';
+  document.getElementById('yogaFigG').innerHTML='';
+  document.getElementById('yogaHoldNum').textContent='0';
+  speak('Session ended. Namaste.');
+  renderYogaList();toast('🙏 NAMASTE');
+}
+function yFinish(){
+  clearInterval(yTimer);clearInterval(yAnim);clearInterval(yVerbal);
+  document.getElementById('yogaMain').style.display='none';
+  const mins=Math.round((Date.now()-yStart)/60000)||10;
+  document.getElementById('yogaFinMins').textContent=mins;
+  document.getElementById('yogaFinish').classList.add('show');
+  document.getElementById('yogaProg').style.width='100%';
+  document.getElementById('yogaPct').textContent='8 / 8';
+  renderYogaList();
+  speak('Namaste. Your yoga flow is complete. Take a moment to appreciate what your body can do.');
+  [440,554,659,880].forEach((f,i)=>setTimeout(()=>beep(f,0.25,'sine'),i*120));
+  toast('🧘 FLOW COMPLETE — NAMASTE!',3000);
+}
+function restartYoga(){
+  yDone=new Array(YOGA.length).fill(false);yStarted=false;yCur=-1;yStart=null;
+  document.getElementById('yogaFinish').classList.remove('show');
+  document.getElementById('yogaMain').style.display='block';
+  document.getElementById('yogaStartBtn').textContent='▶ BEGIN FLOW';
+  document.getElementById('yogaPrevBtn').disabled=true;document.getElementById('yogaSkipBtn').disabled=true;
+  document.getElementById('yogaStopBtn').style.display='none';
+  document.getElementById('yogaTimer').classList.remove('show');
+  document.getElementById('yogaProg').style.width='0%';document.getElementById('yogaPct').textContent='0 / 8';
+  document.getElementById('yogaTitle').textContent='READY TO FLOW?';
+  document.getElementById('yogaDesc').textContent='8 beginner yoga poses to improve flexibility, reduce stress, and energise your mind and body.';
+  document.getElementById('yogaTags').innerHTML='<span class="tag tag-lime">8 POSES</span><span class="tag tag-grey">~10 MIN</span><span class="tag tag-grey">~35 KCAL</span>';
+  document.getElementById('yogaCoach').textContent='Press Begin Flow to start your 10-minute yoga session.';
+  document.getElementById('yogaFigG').innerHTML='';document.getElementById('yogaHoldNum').textContent='0';
+  renderYogaList();
+}
+renderYogaList();drawYoga('mountain',0);
+
+// ── YOGA YOUTUBE VIDEOS ────────────────────────────────────────────────
+let videoOpen=false;
+
+// Full guided yoga sessions playlist
+const FULL_SESSIONS=[
+  {title:'10-Min Morning Yoga for Beginners',channel:'Yoga With Adriene',duration:'10 min',ytId:'4vTJHUDB5ak',level:'Beginner'},
+  {title:'20-Min Full Body Yoga Flow',channel:'Yoga With Adriene',duration:'20 min',ytId:'v7AYKMP6rOE',level:'Beginner'},
+  {title:'10-Min Yoga for Stress Relief',channel:'Boho Beautiful Yoga',duration:'10 min',ytId:'hJbRpHp8kL0',level:'All Levels'},
+  {title:'15-Min Desk Yoga — Office Break',channel:'Yoga With Kassandra',duration:'15 min',ytId:'tAUf7aajBWE',level:'Beginner'},
+  {title:'30-Min Beginner Yoga Full Class',channel:'Yoga With Adriene',duration:'30 min',ytId:'9kOCY0KNByw',level:'Beginner'},
+];
+
+function renderFullSessions(){
+  const el=document.getElementById('fullVideoList');
+  if(!el)return;
+  el.innerHTML=FULL_SESSIONS.map((v,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer"
+      onclick="openFullSession('${v.ytId}','${v.title}')">
+      <div style="
+        width:52px;height:36px;border-radius:6px;
+        background:url('https://img.youtube.com/vi/${v.ytId}/mqdefault.jpg') center/cover;
+        flex-shrink:0;border:1px solid var(--border);position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)">
+          <span style="font-size:14px">▶</span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.title}</div>
+        <div style="font-size:10px;color:var(--grey);margin-top:2px">${v.channel} · ${v.duration}</div>
+      </div>
+      <span style="
+        font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:700;
+        padding:3px 8px;border-radius:5px;flex-shrink:0;
+        background:rgba(200,241,53,0.1);color:var(--lime);border:1px solid rgba(200,241,53,0.2)
+      ">${v.level}</span>
+    </div>`).join('');
+}
+
+function openFullSession(ytId,title){
+  // Opens YouTube in a new tab (best experience for full sessions)
+  window.open('https://www.youtube.com/watch?v='+ytId,'_blank');
+  toast('▶ OPENING — '+title.substring(0,28)+'...');
+}
+
+function loadYogaVideo(pose){
+  const card=document.getElementById('yogaVideoCard');
+  if(!pose.ytId){card.style.display='none';return;}
+  card.style.display='block';
+  document.getElementById('videoLabel').textContent=pose.ytTitle||pose.name+' Tutorial';
+  // Reset video state when pose changes
+  if(videoOpen){
+    document.getElementById('ytFrame').src='https://www.youtube.com/embed/'+pose.ytId+'?rel=0&modestbranding=1';
+  } else {
+    document.getElementById('ytFrame').src='';
+  }
+}
+
+function toggleVideo(){
+  videoOpen=!videoOpen;
+  const frame=document.getElementById('videoFrame');
+  const btn=document.getElementById('videoToggleBtn');
+  if(videoOpen){
+    frame.style.display='block';
+    btn.textContent='✕ HIDE';
+    // Load the current pose video
+    if(yCur>=0&&YOGA[yCur].ytId){
+      document.getElementById('ytFrame').src='https://www.youtube.com/embed/'+YOGA[yCur].ytId+'?rel=0&modestbranding=1&color=white';
+    }
+    toast('▶ VIDEO LOADED');
+  } else {
+    frame.style.display='none';
+    btn.textContent='▶ SHOW';
+    // Pause by clearing src
+    document.getElementById('ytFrame').src='';
+  }
+}
+
+renderFullSessions();
+
+// ── CALORIES ──────────────────────────────────────────────────────────
+let calLogs=[],calTot=0,lastKcal=0,lastActName='';
+function calcCal(){
+  const wt=parseFloat(document.getElementById('calWt').value)||60;
+  const met=parseFloat(document.getElementById('calAct').value);
+  const dur=parseFloat(document.getElementById('calDur').value)||30;
+  const sel=document.getElementById('calAct');
+  lastActName=sel.options[sel.selectedIndex].text.replace(/^.+? /,'');
+  const k=Math.round(met*wt*(dur/60));lastKcal=k;
+  document.getElementById('calNum').textContent=k;
+  document.getElementById('calResult').classList.add('show');
+  const eq=k>=400?'a large fast food meal (~700 kcal)':k>=200?'a plate of nasi lemak (~350 kcal)':k>=100?'a teh tarik (~130 kcal)':'a banana (~89 kcal)';
+  document.getElementById('calEquiv').textContent='≈ burns off '+eq;
+}
+function logCal(){
+  if(!lastKcal)return;
+  const d=parseFloat(document.getElementById('calDur').value)||30;
+  calLogs.push({n:lastActName,d,k:lastKcal});calTot+=lastKcal;
+  renderCalLog();toast('🔥 '+lastKcal+' KCAL LOGGED');
+}
+function renderCalLog(){
+  const el=document.getElementById('calLog');
+  if(!calLogs.length){el.innerHTML='<div style="text-align:center;padding:12px 0">No activities yet</div>';return;}
+  el.innerHTML=calLogs.slice(-5).reverse().map(l=>`
+    <div class="log-row">
+      <div><div class="log-name">${l.n}</div><div class="log-meta">${l.d} min</div></div>
+      <div class="log-kcal">${l.k}</div>
+    </div>`).join('');
+  document.getElementById('calTotal').textContent=calTot+' KCAL';
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────
+let tmI=null,tmOn=false,tmS=0,tmCd=false,tmMode='free',tmPhase='work',tmRound=0;
+let tmMusicNodes=[],tmAC=null;
+const tmScript={
+  free:['Stopwatch running. Stay focused and push through.','Great work. Every second counts.','You are building healthy habits. Keep it up.','Halfway. Do not slow down now.','Finish strong. You have got this.'],
+  hiit:['Work phase — push as hard as you can!','Maximum effort! No holding back!','Rest now. Breathe deeply. Recover.','Get ready. Next round in three... two... one!','Final round! Leave everything on the floor!'],
+  tabata:['Twenty seconds — go go go!','Do not stop. Push through the burn!','Ten second rest. Breathe!','Stay strong. You are halfway through tabata.','Last round! Give it absolutely everything!'],
+  stretch:['Settle into this stretch gently. Breathe in deeply.','Exhale and let yourself relax deeper into the stretch.','Feel the tension dissolving. Stay with it.','You are doing beautifully. Hold steady.','Gently release and prepare for the next stretch.'],
+  run:['Run started. Find your natural rhythm.','Settle in. Breathing steady, form tall.','You are moving well. Keep this pace.','More than halfway. You are strong.','Final push. Dig deep and finish hard!'],
+  custom:['Timer started. Focus on your intention.','Stay present. Stay moving. Stay strong.','You are doing well. Keep the momentum.','Almost there. Do not give up.','Last few seconds. Finish with everything you have!'],
+};
+let tmCoachI=0,tmCoachTimer=null;
+
+function tmModeChange(){
+  tmMode=document.getElementById('tmMode').value;
+  document.getElementById('customBox').style.display=tmMode==='custom'?'block':'none';
+  tmReset();
+  if(tmMode==='hiit'||tmMode==='tabata'){tmS=20;tmCd=true;tmPhase='work';tmRound=1;}
+  else if(tmMode==='stretch'){tmS=30;tmCd=true;}
+  else if(tmMode==='custom'){tmS=60;tmCd=true;}
+  else{tmS=0;tmCd=false;}
+  tmDisp();
+  setTmVerbal('Choose a coaching mode and press Start.');
+}
+function setTmVerbal(t){
+  document.getElementById('tmVerbal').textContent=t;
+}
+function startTmCoach(){
+  clearInterval(tmCoachTimer);tmCoachI=0;
+  const sc=tmScript[tmMode]||tmScript.free;
+  function say(){
+    if(tmCoachI<sc.length){setTmVerbal(sc[tmCoachI]);speak(sc[tmCoachI]);tmCoachI++;}
+  }
+  say();tmCoachTimer=setInterval(say,11000);
+}
+function startTmBgMusic(){
+  if(tmAC)return;
+  try{
+    tmAC=new(window.AudioContext||window.webkitAudioContext)();
+    const m=tmAC.createGain();m.gain.value=0.12;m.connect(tmAC.destination);
+    const isEnergetic=tmMode==='hiit'||tmMode==='tabata'||tmMode==='run';
+    const freqs=isEnergetic?[220,330,440]:[130,196,261];
+    freqs.forEach((f,i)=>{
+      const o=tmAC.createOscillator(),g=tmAC.createGain();
+      const lfo=tmAC.createOscillator(),lg=tmAC.createGain();
+      o.type=isEnergetic?'triangle':'sine';o.frequency.value=f;
+      g.gain.value=0.05/(i+1);
+      lfo.frequency.value=isEnergetic?2.8:0.4;lg.gain.value=0.03;
+      lfo.connect(lg);lg.connect(g.gain);
+      o.connect(g);g.connect(m);o.start();lfo.start();
+      tmMusicNodes.push(o,lfo);
+    });
+  }catch(e){}
+}
+function stopTmMusic(){
+  tmMusicNodes.forEach(n=>{try{n.stop();}catch(e){}});tmMusicNodes=[];
+  if(tmAC){try{tmAC.close();}catch(e){}}tmAC=null;
+}
+function tmToggle(){
+  if(tmOn){
+    clearInterval(tmI);clearInterval(tmCoachTimer);tmOn=false;
+    document.getElementById('tmBtn').textContent='▶ RESUME';
+    document.getElementById('bigPhase').textContent='PAUSED';
+    setTmVerbal('Paused. Press Resume when ready.');
+  }else{
+    tmOn=true;
+    document.getElementById('tmBtn').textContent='⏸ PAUSE';
+    const labels={free:'STOPWATCH',hiit:'HIIT — WORK!',tabata:'TABATA',stretch:'STRETCHING',run:'RUNNING',custom:'COUNTDOWN'};
+    document.getElementById('bigPhase').textContent=labels[tmMode]||'ACTIVE';
+    startTmCoach();startTmBgMusic();
+    tmI=setInterval(()=>{
+      if(tmCd){
+        tmS--;
+        if(tmS<=3&&tmS>0)beep(440,0.06,'square');
+        if(tmS<=0){
+          if(tmMode==='hiit'||tmMode==='tabata'){
+            if(tmPhase==='work'){
+              tmPhase='rest';tmS=10;
+              document.getElementById('bigPhase').textContent='REST 💨';
+              setTmVerbal('REST! Breathe. Recover for the next round.');
+              speak('Rest. Breathe deeply.');
+              stopTmMusic();startTmBgMusic();beep(330,0.25);
+            }else{
+              tmRound++;const max=tmMode==='tabata'?8:99;
+              if(tmRound>max){
+                tmS=0;clearInterval(tmI);clearInterval(tmCoachTimer);tmOn=false;
+                document.getElementById('tmBtn').textContent='▶ START';
+                document.getElementById('bigPhase').textContent='✓ COMPLETE';
+                setTmVerbal('Complete! You finished all rounds. Outstanding work!');
+                speak('Complete! Outstanding work!');stopTmMusic();chime();toast('🏆 COMPLETE!');return;
+              }
+              tmPhase='work';tmS=20;
+              document.getElementById('bigPhase').textContent='WORK 🔥 R'+tmRound;
+              setTmVerbal('Round '+tmRound+'! Push hard!');speak('Round '+tmRound+'. Work!');
+              stopTmMusic();startTmBgMusic();beep(660,0.15);
+            }
+          }else{
+            tmS=0;clearInterval(tmI);clearInterval(tmCoachTimer);tmOn=false;
+            document.getElementById('tmBtn').textContent='▶ START';
+            document.getElementById('bigPhase').textContent='✓ DONE';
+            setTmVerbal("Time's up! Great session. Rest and recover.");
+            speak("Time's up! Well done.");stopTmMusic();chime();toast('⏱ TIME\'S UP!');
+          }
+        }
+      }else tmS++;
+      tmDisp();
+    },1000);
+  }
+}
+function tmReset(){
+  clearInterval(tmI);clearInterval(tmCoachTimer);stopTmMusic();
+  tmOn=false;tmS=0;tmCd=false;tmPhase='work';tmRound=0;
+  document.getElementById('bigTime').textContent='00:00';
+  document.getElementById('bigPhase').textContent='READY';
+  document.getElementById('tmBtn').textContent='▶ START';
+  setTmVerbal('Choose a coaching mode below and press Start.');
+}
+function tmSet(s){
+  tmReset();tmS=s;tmCd=true;
+  document.getElementById('tmMode').value='custom';
+  document.getElementById('customBox').style.display='block';
+  document.getElementById('tmCustomSecs').value=s;
+  tmMode='custom';
+  document.getElementById('bigPhase').textContent='READY — PRESS START';tmDisp();
+}
+function tmDisp(){
+  const m=Math.floor(tmS/60).toString().padStart(2,'0');
+  const s=(tmS%60).toString().padStart(2,'0');
+  document.getElementById('bigTime').textContent=m+':'+s;
+}
+
+// Set tracker
+const defaultWk=[{n:'Push-ups',s:3,r:12,d:[]},{n:'Squats',s:3,r:15,d:[]},{n:'Plank',s:3,r:0,d:[],t:'30s'}];
+let wk=JSON.parse(JSON.stringify(defaultWk));
+function renderWk(){
+  document.getElementById('wkList').innerHTML=wk.map((e,ei)=>`
+    <div class="wk-ex">
+      <div class="wk-ex-hd">
+        <div><div class="wk-ex-name">${e.n}</div><div class="wk-ex-meta">${e.s} SETS × ${e.t||e.r+' REPS'}</div></div>
+        <span class="tag ${e.d.length===e.s?'tag-lime':'tag-grey'}">${e.d.length}/${e.s}</span>
+      </div>
+      <div class="sets-wrap">
+        ${Array.from({length:e.s},(_,si)=>`
+          <button class="set-btn ${e.d.includes(si)?'done':''}" onclick="toggleSet(${ei},${si})">
+            ${e.d.includes(si)?'✓':'S'+(si+1)}
+          </button>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function toggleSet(ei,si){
+  const x=wk[ei].d.indexOf(si);
+  if(x===-1){wk[ei].d.push(si);toast('💪 SET '+(si+1)+' DONE');}
+  else wk[ei].d.splice(x,1);
+  renderWk();
+}
+function addWkEx(){
+  const n=prompt('Exercise name:');if(!n)return;
+  const s=parseInt(prompt('Sets?','3'))||3;
+  const r=parseInt(prompt('Reps?','12'))||12;
+  wk.push({n,s,r,d:[]});renderWk();toast('✓ '+n.toUpperCase()+' ADDED');
+}
+renderWk();
+</script>
+</body>
+</html>
